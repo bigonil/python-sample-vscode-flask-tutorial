@@ -2,6 +2,7 @@
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
+# azure-pipelines.yml
 
 trigger:
 - main
@@ -24,7 +25,10 @@ steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(python.version)'
+    addToPath: true
   displayName: 'Use Python $(python.version)'
+  env:
+    GITHUB_TOKEN: $(System.AccessToken)  # Avoid GitHub download rate limits
 
 - script: |
     python -m pip install --upgrade pip
@@ -34,10 +38,11 @@ steps:
 - script: |
     pip install pytest pytest-azurepipelines
     pytest
-  displayName: 'pytest'
+  displayName: 'Run tests with pytest'
 
-- task: UsePythonVersion@0
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
   inputs:
-    version: '3.8'
-  env:
-    GITHUB_TOKEN: $(System.AccessToken)
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/TEST-*.xml'
+    failTaskOnFailedTests: true

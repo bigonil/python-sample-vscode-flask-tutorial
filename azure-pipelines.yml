@@ -35,3 +35,9 @@ steps:
     pip install pytest pytest-azurepipelines
     pytest
   displayName: 'pytest'
+
+- task: UsePythonVersion@0
+  inputs:
+    version: '3.8'
+  env:
+    GITHUB_TOKEN: $(System.AccessToken)
